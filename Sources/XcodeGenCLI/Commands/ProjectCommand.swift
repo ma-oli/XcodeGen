@@ -18,6 +18,9 @@ class ProjectCommand: Command {
     @Key("-r", "--project-root", description: "The path to the project root directory. Defaults to the directory containing the project spec.")
     var projectRoot: Path?
 
+    @VariadicKey("-S", "--extra-resource-path", description: "Extra search path to XcodeGen resources.")
+    var extraResourcePaths: [Path]
+
     @Flag("-n", "--no-env", description: "Disable environment variable expansions")
     var disableEnvExpansion: Bool
 
@@ -48,7 +51,7 @@ class ProjectCommand: Command {
             let variables: [String: String] = disableEnvExpansion ? [:] : ProcessInfo.processInfo.environment
             
             do {
-                project = try specLoader.loadProject(path: projectSpecPath, projectRoot: projectRoot, variables: variables)
+                project = try specLoader.loadProject(path: projectSpecPath, projectRoot: projectRoot, variables: variables, extraResourcePaths: extraResourcePaths.map({$0.absolute()}))
             } catch {
                 throw GenerationError.projectSpecParsingError(error)
             }

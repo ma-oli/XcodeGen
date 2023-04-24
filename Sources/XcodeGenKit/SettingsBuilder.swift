@@ -18,8 +18,8 @@ extension Project {
         }
 
         if let type = config.type, options.settingPresets.applyProject {
-            buildSettings += SettingsPresetFile.base.getBuildSettings()
-            buildSettings += SettingsPresetFile.config(type).getBuildSettings()
+            buildSettings += SettingsPresetFile.base.getBuildSettings(extraResourcePaths: extraResourcePaths)
+            buildSettings += SettingsPresetFile.config(type).getBuildSettings(extraResourcePaths: extraResourcePaths)
         }
 
         // apply custom platform version
@@ -43,9 +43,9 @@ extension Project {
         var buildSettings = BuildSettings()
 
         if options.settingPresets.applyTarget {
-            buildSettings += SettingsPresetFile.platform(target.platform).getBuildSettings()
-            buildSettings += SettingsPresetFile.product(target.type).getBuildSettings()
-            buildSettings += SettingsPresetFile.productPlatform(target.type, target.platform).getBuildSettings()
+            buildSettings += SettingsPresetFile.platform(target.platform).getBuildSettings(extraResourcePaths: extraResourcePaths)
+            buildSettings += SettingsPresetFile.product(target.type).getBuildSettings(extraResourcePaths: extraResourcePaths)
+            buildSettings += SettingsPresetFile.productPlatform(target.type, target.platform).getBuildSettings(extraResourcePaths: extraResourcePaths)
         }
 
         // apply custom platform version
@@ -180,13 +180,13 @@ private var settingPresetSettings: [String: Cached<BuildSettings>] = [:]
 
 extension SettingsPresetFile {
 
-    public func getBuildSettings() -> BuildSettings? {
+    public func getBuildSettings(extraResourcePaths: [Path]) -> BuildSettings? {
         if let cached = settingPresetSettings[path] {
             return cached.value
         }
         let bundlePath = Path(Bundle.main.bundlePath)
         let relativePath = Path("SettingPresets/\(path).yml")
-        var possibleSettingsPaths: [Path] = [
+        var possibleSettingsPaths: [Path] = extraResourcePaths.map({$0 + relativePath}) + [
             relativePath,
             bundlePath + relativePath,
             bundlePath + "../share/xcodegen/\(relativePath)",

@@ -36,6 +36,7 @@ public struct Project: BuildSettingsContainer {
             projectReferencesMap = Dictionary(uniqueKeysWithValues: projectReferences.map { ($0.name, $0) })
         }
     }
+    public var extraResourcePaths: [Path]
 
     private var targetsMap: [String: Target]
     private var aggregateTargetsMap: [String: AggregateTarget]
@@ -56,7 +57,8 @@ public struct Project: BuildSettingsContainer {
         fileGroups: [String] = [],
         configFiles: [String: String] = [:],
         attributes: [String: Any] = [:],
-        projectReferences: [ProjectReference] = []
+        projectReferences: [ProjectReference] = [],
+        extraResourcePaths: [Path] = []
     ) {
         self.basePath = basePath
         self.name = name
@@ -75,6 +77,7 @@ public struct Project: BuildSettingsContainer {
         self.configFiles = configFiles
         self.attributes = attributes
         self.projectReferences = projectReferences
+        self.extraResourcePaths = extraResourcePaths
         projectReferencesMap = Dictionary(uniqueKeysWithValues: self.projectReferences.map { ($0.name, $0) })
     }
 
@@ -158,16 +161,16 @@ extension Project: Equatable {
 
 extension Project {
 
-    public init(path: Path) throws {
+    public init(path: Path, extraResourcePaths: [Path]) throws {
         let spec = try SpecFile(path: path)
-        try self.init(spec: spec)
+        try self.init(spec: spec, extraResourcePaths: extraResourcePaths)
     }
 
-    public init(spec: SpecFile) throws {
-        try self.init(basePath: spec.basePath, jsonDictionary: spec.resolvedDictionary())
+    public init(spec: SpecFile, extraResourcePaths: [Path] = []) throws {
+        try self.init(basePath: spec.basePath, jsonDictionary: spec.resolvedDictionary(), extraResourcePaths: extraResourcePaths)
     }
 
-    public init(basePath: Path = "", jsonDictionary: JSONDictionary) throws {
+    public init(basePath: Path = "", jsonDictionary: JSONDictionary, extraResourcePaths: [Path] = []) throws {
         self.basePath = basePath
 
         let jsonDictionary = Project.resolveProject(jsonDictionary: jsonDictionary)
@@ -214,6 +217,7 @@ extension Project {
         targetsMap = Dictionary(uniqueKeysWithValues: targets.map { ($0.name, $0) })
         aggregateTargetsMap = Dictionary(uniqueKeysWithValues: aggregateTargets.map { ($0.name, $0) })
         projectReferencesMap = Dictionary(uniqueKeysWithValues: projectReferences.map { ($0.name, $0) })
+        self.extraResourcePaths = extraResourcePaths
     }
 
     static func resolveProject(jsonDictionary: JSONDictionary) -> JSONDictionary {

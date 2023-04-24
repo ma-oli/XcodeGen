@@ -25,7 +25,7 @@ class FixtureTests: XCTestCase {
 }
 
 private func generateXcodeProject(specPath: Path, file: String = #file, line: Int = #line) throws {
-    let project = try Project(path: specPath)
+    let project = try Project(path: specPath, buildSettingsPath: [])
     let generator = ProjectGenerator(project: project)
     let writer = FileWriter(project: project)
     let xcodeProject = try generator.generateXcodeProject(userName: "someUser")
